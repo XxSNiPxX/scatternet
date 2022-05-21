@@ -38,6 +38,8 @@ Initialization of asymptotically large matrixes/co-ordinate space within which o
 ### Setup
 Make sure your go-ipfs node is running. Edit the genesis file as described in `/genesis`  with your coresponding data. 
 
+### command to start go-ipfs node
+ipfs daemon --enable-pubsub-experiment --enable-namesys-pubsub
 ### Steps to run
 1) `npm i`
 2) `npm start`

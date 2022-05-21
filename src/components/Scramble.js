@@ -61,6 +61,7 @@ function getRndInteger(min=0, max=10000) {
 
   //main
  function Scramble() {
+  const [load,loader] = useState(true);
   const { ipfs, ipfsInitError } = useIpfsFactory({ commands: ['id'] })
   const { ipfsRPC, ipfsRPCInitError } = useIpfsRPCFactory({ commands: ['id'] })
   const [shouldDisableDownload,triggerDownload]=useState(true)
@@ -160,7 +161,17 @@ function getRndInteger(min=0, max=10000) {
 
   useEffect(() => {
 
+    const loader = async () => {
+      //*This is the loader
+      console.log(load,'load is')
+      if(!load) return;
+      if(log==null) return;
+      console.log('herr')
+      log("The console is starting up.Please wait.")
+      
 
+
+    }
     const getVersion = async () => {
       //*This is an interrupter
       if (!ipfs ) return;
@@ -190,6 +201,7 @@ function getRndInteger(min=0, max=10000) {
 
     getVersion();
     connectSwarm();
+    loader();
   }, [ipfs,ipfsRPC])
 
   return (
@@ -231,7 +243,7 @@ function getRndInteger(min=0, max=10000) {
                           Note
                         </p>
                         <p style={{ textAlign: "left" }}>
-                          Upload an audio file that you want to scatter.It splits it into two parts,creates the respective IPNS addressesv and returns a tuple of locations.{" "}
+                          Upload an audio file that you want to scatter.It splits it into n parts,creates the respective IPNS addresses and returns a tuple of locations.{" "}
                         </p>
                       
                       </Grid>
@@ -316,7 +328,7 @@ function getRndInteger(min=0, max=10000) {
       </Grid>
      
       <Grid  style={{textAlign: "center",backgroundColor:'#808080'}} item xs={15} sm={15} md={15}>
-            <Link to={"/"}>
+      <Link to={"/"} onClick={() => window.location.href="/"}>
       <Button   variant="contained" component="span"
           style={{justifyContent: "flex-start",color: "#97CE4C",backgroundColor:'black'}} >
               Back</Button>

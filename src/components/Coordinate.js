@@ -22,6 +22,7 @@ import Button from '@mui/material/Button';
 import {Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import { concat } from 'uint8arrays/concat'
+import CircularProgress from '@mui/material/CircularProgress';
 
 const all = require('it-all')
 
@@ -57,16 +58,10 @@ const Logger=outEl => {
     textAlign: 'center',
     color: 'darkslategray',
   }));
-  function toBuffer(ab) {
-    const buf = Buffer.alloc(ab.byteLength);
-    const view = new Uint8Array(ab);
-    for (let i = 0; i < buf.length; ++i) {
-        buf[i] = view[i];
-    }
-    return buf;
-}
+
 
  function Coordinate() {
+  const [load,loader] = useState(true);
   const { ipfs, ipfsInitError } = useIpfsFactory({ commands: ['id'] })
   const { ipfsRPC, ipfsRPCInitError } = useIpfsRPCFactory({ commands: ['id'] })
   const [shouldDisableDownload,triggerDownload]=useState(true)
@@ -88,44 +83,10 @@ const Logger=outEl => {
   //On file input create 5 distinct coordinates as an array.Return those coordinates
   //Create the respecive key names and generate keys for those coordinates
 
-  //Generates co-ordinate spaces defining a data location
-  const IndiceGenerator=async (size,temm)=>{
-    let coordinateData=[]
-    for(let i=0;i<size;i++){
-      let x_=getRndInteger()
-      let y_=getRndInteger()
-      let z_=getRndInteger()
-      const bytes_ = json.encode({ x: x_,y:y_,z:z_ })
-    let kkey=await ipfsRPC.key.gen(buf2hex(bytes_), {
-      type: 'ed25519'
-    })
-      coordinateData.push({location:{
-        x:x_,
-        y:y_,
-        z:z_
-      },
-      key:kkey,
-      data:temm[i]
-   })
-    }
-    
-    // console.log(kkey)
-    return coordinateData
-  }
 
 
-  const onDownload=async()=>{
-    const fileName = "coordinateSpace";
-    const json = JSON.stringify(scatterData);
-    const blob = new Blob([json],{type:'application/json'});
-    const href = await URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = href;
-    link.download = fileName + ".json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+
+
   const changeHandler = async (event) => {
 
       customBreak:{
@@ -202,47 +163,7 @@ const Logger=outEl => {
 
 
 
-    //     let byteArray = new Int8Array(buffer);
-    //     const bufferData=toBuffer(byteArray);
-    //     console.log(bufferData)
-    //     let size=parseInt(byteArray.length/1)
-    //     let temm= await  _.chunk(byteArray,size)
-    //     let indicesNumber=Math.ceil(event.target.files[0].size/size)
-    //     let keyData=await IndiceGenerator(indicesNumber,temm)
-    //     log(`Starting to push data to the respective indices...`)
-    //     let scatterConfig={
-    //       coordinates:[],
-    //       type:''
-    //     };
-    //     log(`Total indices to push --- ${keyData.length}`)
-    //     for(let i=0;i<keyData.length;i++){
-    //       log(`Pushing ${i+1} of ${keyData.length}`)
-    //       const pushData = await ipfsRPC.add(keyData[i]["data"])
-    //       console.log(pushData,i,'is')
-    //       let path='/ipfs/'+pushData.path
-    //       try{
-          
-    //       const results = await ipfsRPC.name.publish(path, {
-    //         resolve: false,
-    //         key: keyData[i].key.id,
-    //       });
-    //       log(`Published ${results.name} to ${results.value}`); //
-          
-    //     }
-    //     catch(error){
-    //         log(error)
-    //     }
-    //   }
-    //   keyData.forEach(e=>{
-    //     scatterConfig.coordinates.push(e['location'])
-    //   })
-    //   scatterConfig.type=event.target.files[0].type
-    //   console.log(scatterConfig)
-    //   updateScatterData(scatterConfig)
-    //   triggerDownload(false)
-    //   log(`Done.`); //
-    //   log('Download the configuration file.')
-    
+
 
   }
 
@@ -250,7 +171,16 @@ const Logger=outEl => {
 	};
 
   useEffect(() => {
+    const loader = async () => {
+      //*This is the loader
+      if(!load) return;
+      if(log==null) return;
+      console.log('herr')
+      log("The console is starting up.Please wait.")
+      
 
+
+    }
     const getVersion = async () => {
       //*This is an interrupter
       if (!ipfs ) return;
@@ -266,7 +196,8 @@ const Logger=outEl => {
       if (!ipfs ) return;
       if (log==null) return;
       //** 
-  
+      
+
        await ipfs.swarm.connect(`/ip4/127.0.0.1/tcp/4003/ws/p2p/${"12D3KooWDTBbTcTL3YWmn9paiYyirxsmkEbtCiJLW5yJQ3Naoqii"}`)
        log(`Connected to go-ipfs.`);
        log(`Getting peers and key list...`);
@@ -274,20 +205,6 @@ const Logger=outEl => {
        var keyy=await ipfsRPC.key.list()
        log(`Got peers and key list.`);
        log("Please select a file to scatter.")
-          // let fullData=[]
-          // for(let i=0;i<keyy.length;i++){
-          //   console.log('This is the '+i+" one")
-          //   if(keyy[i].name!=='self'){
-              
-          //     let ipns_addr='/ipns/'+keyy[i].id
-      
-          //     let addr= await last(ipfsRPC.name.resolve(ipns_addr))
-          //     let data=await last(ipfsRPC.cat(addr))
-          //     console.log(data)
-          //     fullData.push(data)
-
-          //   }
-          // }
 
     }
     
@@ -295,6 +212,7 @@ const Logger=outEl => {
 
     getVersion();
     connectSwarm();
+    loader();
   }, [ipfs,ipfsRPC])
 
   return (
@@ -352,7 +270,7 @@ const Logger=outEl => {
    {/* This is the grid that gets the console up for user information */}       
       </Grid>
           <Grid style={{justifyContent: "flex-start",color: "#97CE4C",backgroundColor:'black'}} item xs={4} >
-      <div className="ph3 mb3">
+      <div  className="ph3 mb3">
 
       <div
         id="console"
@@ -369,7 +287,7 @@ const Logger=outEl => {
           border-box
           overflow-scroll
         "
-        style={{height: "300px",justifyContent:'center'}}
+        style={{height: "140px",justifyContent:'center'}}
       ></div>
       
     </div>
@@ -381,7 +299,7 @@ const Logger=outEl => {
       </Grid>
      <br></br>
       <Grid style={{textAlign: "center",backgroundColor:'#808080'}} item xs={15} sm={15} md={15}>
-            <Link to={"/"}>
+            <Link to={"/"} onClick={() => window.location.href="/"}>
       <Button  variant="contained" component="span"
           style={{justifyContent: "flex-start",color: "#97CE4C",backgroundColor:'black'}}  >
               Back</Button>
